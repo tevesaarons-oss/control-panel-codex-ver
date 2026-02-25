@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>CONTROL PANEL</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --panel: rgba(18, 22, 32, 0.85);
+      --panel-2: rgba(22, 27, 40, 0.9);
+      --text: #e3e8f2;
+      --muted: #8b96ad;
+      --line: rgba(120, 135, 165, 0.25);
+      --primary: #3a5c9e;
+      --primary-2: #6f8fc7;
+      --danger: #b64b55;
+      --ok: #2f9c6a;
+      --amber: #c09a4a;
+      --purple: #6f5fa8;
+      --shadow: 0 14px 30px rgba(0,0,0,.55);
+      --radius: 16px;
+      --nav-h: 72px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin:0; background: radial-gradient(1000px 520px at 20% -10%, #151c2c 0%, transparent 40%), var(--bg); color:var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { min-height:100vh; }
+    .app { max-width:430px; margin:0 auto; min-height:100vh; padding:12px 12px calc(var(--nav-h) + 18px); }
+    .top-title { padding:6px 4px 12px; }
+    .title { font-size:1.12rem; letter-spacing:.12em; font-weight:800; }
+    .subtitle { color:var(--muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.12em; margin-top:2px; }
+    .screen { display:none; gap:10px; }
+    .screen.active { display:flex; flex-direction:column; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:12px; box-shadow:var(--shadow); backdrop-filter: blur(8px); }
+    .card h3,.card h4 { margin:0 0 8px; }
+    .muted { color:var(--muted); }
+    .row { display:flex; gap:8px; align-items:center; }
+    .row.between { justify-content:space-between; }
+    .stack { display:flex; flex-direction:column; gap:8px; }
+    button, .btn {
+      border:1px solid rgba(120, 135, 165, .35);
+      color:var(--text); background:rgba(43, 57, 84, .75);
+      border-radius:12px; padding:10px 12px; font-weight:650; font-size:.92rem;
+    }
+    button:active { transform:translateY(1px); }
+    .btn-ghost { background:rgba(28,35,50,.66); }
+    .btn-danger { background:rgba(126, 56, 64, .82); border-color:rgba(182,75,85,.55); }
+    .btn-ok { background:rgba(42, 118, 86, .84); border-color:rgba(47,156,106,.55); }
+    .btn-amber { background:rgba(132, 108, 61, .84); border-color:rgba(192,154,74,.55); }
+    .input, select, textarea {
+      width:100%; border-radius:12px; border:1px solid rgba(120, 135, 165, .35); background:rgba(14,18,28,.75); color:var(--text);
+      padding:10px 11px; font-size:.94rem;
+    }
+    textarea { min-height:84px; resize:vertical; }
+    .chips { display:flex; flex-wrap:wrap; gap:7px; }
+    .chip { border:1px solid var(--line); border-radius:999px; padding:6px 10px; font-size:.77rem; color:var(--muted); background:rgba(18,24,36,.72); }
+    .chip.active { color:#fff; border-color:var(--primary-2); box-shadow:0 0 0 1px rgba(111,143,199,.2) inset; }
+    .task { border:1px solid var(--line); border-radius:14px; padding:10px; background:rgba(12,17,27,.7); }
+    .task.active { border-color:rgba(111,143,199,.58); box-shadow:0 0 0 1px rgba(111,143,199,.16) inset; opacity:.9; }
+    .task-top { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+    .task-text { font-weight:650; line-height:1.34; }
+    .small { font-size:.8rem; }
+    .cat { font-size:.74rem; border-radius:999px; padding:4px 8px; border:1px solid transparent; white-space:nowrap; }
+    .icon { opacity:.95; margin-right:4px; }
+    .home-grid { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; }
+    .ring { width:56px; height:56px; border-radius:50%; background:conic-gradient(var(--primary-2) 0deg, rgba(77,99,143,.35) 0deg); display:grid; place-items:center; }
+    .ring i { width:42px; height:42px; border-radius:50%; background:#0f1420; display:grid; place-items:center; font-style:normal; font-size:.75rem; color:var(--muted); }
+    .tag { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; padding:4px 7px; border-radius:999px; border:1px solid rgba(120, 135, 165, .45); color:#c4cee0; background:rgba(20,26,39,.8); }
+    .quote { font-size:.86rem; color:#d4def4; line-height:1.38; }
+    .bar { height:9px; border-radius:999px; background:rgba(97, 109, 134, .25); overflow:hidden; }
+    .fill { height:100%; background:linear-gradient(90deg, var(--primary), var(--primary-2)); }
+    .warn { color:#ff8f9f; }
+    .focus-time { font-size:2rem; letter-spacing:.08em; font-weight:800; text-align:center; margin:6px 0; }
+    .focus-time.critical { color:#ff7a8e; animation: blink .8s step-end infinite; }
+    @keyframes blink { 50% { opacity:.35; } }
+    .checkin-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .checkin { position:relative; text-align:left; }
+    .badge { position:absolute; right:7px; top:7px; font-size:.68rem; background:rgba(67, 92, 142, .85); color:#dbe5ff; min-width:18px; height:18px; border-radius:999px; display:grid; place-items:center; padding:0 5px; }
+    .list { display:flex; flex-direction:column; gap:8px; }
+    .log-day { border:1px solid var(--line); border-radius:12px; padding:8px; }
+    .scroll-mark { color:#ff7d8f; font-size:.72rem; margin-left:6px; }
+    .subtabs { display:flex; gap:6px; }
+    .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .metric { border:1px solid var(--line); border-radius:12px; padding:8px; background:rgba(16,22,34,.74); }
+    .metric .n { font-size:1.2rem; font-weight:800; }
+    .bottom-nav {
+      position:fixed; left:50%; transform:translateX(-50%); bottom:0; width:min(430px,100%);
+      background:rgba(10,14,22,.96); border-top:1px solid rgba(120, 135, 165, .35); display:grid; grid-template-columns:repeat(5,1fr);
+      padding:8px 8px calc(8px + env(safe-area-inset-bottom)); gap:6px;
+    }
+    .nav-btn { background:transparent; border:1px solid transparent; padding:8px 4px; border-radius:10px; color:#95a2ba; font-size:.72rem; display:flex; flex-direction:column; align-items:center; gap:3px; }
+    .nav-btn.active { color:#dfe8ff; border-color:rgba(111,143,199,.45); background:rgba(39,52,77,.65); }
+    .modal-wrap { position:fixed; inset:0; background:rgba(3,7,14,.7); display:none; align-items:flex-end; justify-content:center; z-index:30; }
+    .modal-wrap.show { display:flex; }
+    .modal { width:min(430px,100%); background:var(--panel-2); border:1px solid var(--line); border-radius:16px 16px 0 0; padding:12px; max-height:90vh; overflow:auto; }
+    .split { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="top-title">
+    <div class="title">CONTROL PANEL</div>
+    <div class="subtitle">Career-Weighted Financial Escape System</div>
+  </div>
+
+  <section id="screen-home" class="screen active"></section>
+  <section id="screen-bank" class="screen"></section>
+  <section id="screen-mind" class="screen"></section>
+  <section id="screen-log" class="screen"></section>
+  <section id="screen-settings" class="screen"></section>
+</div>
+
+<nav class="bottom-nav" id="bottom-nav"></nav>
+
+<div class="modal-wrap" id="task-modal-wrap"><div class="modal" id="task-modal"></div></div>
+<div class="modal-wrap" id="blocker-modal-wrap"><div class="modal" id="blocker-modal"></div></div>
+<div class="modal-wrap" id="editor-modal-wrap"><div class="modal" id="editor-modal"></div></div>
+
+<script>
+(() => {
+  const KEY = 'cp_data';
+  const CATS = {
+    Career:{icon:'⚙️', color:'#6e93ff', border:'rgba(110,147,255,.55)'},
+    Mind:{icon:'🜁', color:'#af92ff', border:'rgba(175,146,255,.55)'},
+    Money:{icon:'◈', color:'#efb845', border:'rgba(239,184,69,.55)'},
+    Debt:{icon:'⛓', color:'#e05a65', border:'rgba(224,90,101,.55)'},
+    Body:{icon:'⬢', color:'#30c779', border:'rgba(48,199,121,.55)'}
+  };
+  const CHECKINS = ['Gym','Stretch','Stretch Routine','Meditation Routine','Meditate','Read','Journal','Golf'];
+  const QUOTES = [
+    'Discipline is a contract signed in silence.',
+    'Income obeys capability, capability obeys repetition.',
+    'Debt is pressure; pressure becomes propulsion when directed.',
+    'Cold plans beat hot emotion.',
+    'Build the machine before asking it for mercy.',
+    'The body keeps the mind from surrendering.'
+  ];
+
+  let ui = { screen:'home', bankFilter:'All', logTab:'log', statRange:7, selectedTaskId:null, editingId:null, blockerShownFor:null };
+  let timerInt = null;
+  let state = migrate(readRaw());
+  save();
+
+  function readRaw(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch{ return {}; } }
+  function todayKey(d=new Date()){ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+  function uid(){ return Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-5); }
+
+  function mapLegacyCategory(v){
+    const s = String(v||'').toLowerCase().trim();
+    if(!s) return 'Career';
+    if(['health','golf'].includes(s)) return 'Body';
+    if(['money move','finance','money'].includes(s)) return 'Money';
+    if(['mind'].includes(s)) return 'Mind';
+    if(['debt'].includes(s)) return 'Debt';
+    if(['admin','other','ops','build','execution','job','career','work','tasks','task'].some(k=>s.includes(k))) return 'Career';
+    return 'Career';
+  }
+
+  function migrate(raw){
+    const s = raw && typeof raw==='object' ? raw : {};
+    s.version = Number.isFinite(s.version) ? s.version : 2;
+    s.tasks = Array.isArray(s.tasks) ? s.tasks : [];
+    s.settings = s.settings && typeof s.settings==='object' ? s.settings : {};
+    s.settings.defaultDur = Number.isFinite(+s.settings.defaultDur) ? +s.settings.defaultDur : 25;
+    s.settings.totalDebt = Number.isFinite(+s.settings.totalDebt) ? +s.settings.totalDebt : 0;
+    s.settings.debtStart = s.settings.debtStart || todayKey();
+    s.settings.debtPaid = Number.isFinite(+s.settings.debtPaid) ? +s.settings.debtPaid : 0;
+    s.aiQuestions = Array.isArray(s.aiQuestions) ? s.aiQuestions : [];
+    s.doomscroll = s.doomscroll && typeof s.doomscroll==='object' ? s.doomscroll : {};
+    s.journal = Array.isArray(s.journal) ? s.journal : [];
+    s.lastDay = s.lastDay || todayKey();
+    s.activeTaskId = typeof s.activeTaskId==='string' ? s.activeTaskId : null;
+
+    s.tasks = s.tasks.map((t,i)=>{
+      const category = mapLegacyCategory(t.category);
+      const status = ['today','pending','done','active','missed'].includes(t.status) ? t.status : (t.doneDate||t.completedAt ? 'done':'pending');
+      return {
+        id: t.id || uid(),
+        text: String(t.text||'').trim() || 'Untitled',
+        category,
+        duration: Number.isFinite(+t.duration) ? Math.max(0,+t.duration) : s.settings.defaultDur,
+        status,
+        order: Number.isFinite(+t.order) ? +t.order : i,
+        createdAt: t.createdAt || Date.now(),
+        doneDate: t.doneDate || null,
+        completedAt: t.completedAt || null,
+        blocker: t.blocker || '',
+        checkin: !!t.checkin,
+        remainingSec: Number.isFinite(+t.remainingSec) ? +t.remainingSec : null,
+        startedAt: t.startedAt || null
+      };
+    });
+
+    s.aiQuestions = s.aiQuestions.map(q=>({id:q.id||uid(), text:String(q.text||''), ts:Number.isFinite(+q.ts)?+q.ts:Date.now()})).filter(q=>q.text.trim());
+    if(typeof s.doomscroll !== 'object' || Array.isArray(s.doomscroll)) s.doomscroll = {};
+
+    // normalize active task constraint
+    const actives = s.tasks.filter(t=>t.status==='active');
+    if(actives.length > 1){
+      actives.sort((a,b)=>(b.startedAt||0)-(a.startedAt||0));
+      const keep = actives[0].id;
+      s.tasks.forEach(t=>{ if(t.status==='active' && t.id!==keep) t.status='today'; });
+      s.activeTaskId = keep;
+    } else if(actives.length===1){
+      s.activeTaskId = actives[0].id;
+    } else {
+      s.activeTaskId = null;
+    }
+    return s;
+  }
+
+  function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+  function categoryChip(cat){
+    const c = CATS[cat] || CATS.Career;
+    return `<span class="cat" style="color:${c.color}; border-color:${c.border}"><span class="icon">${c.icon}</span>${cat}</span>`;
+  }
+
+  function dayQuote(){
+    const idx = Math.floor(new Date(todayKey()).getTime()/86400000) % QUOTES.length;
+    return QUOTES[(idx+QUOTES.length)%QUOTES.length];
+  }
+
+  function getTodayTasks(){
+    return state.tasks.filter(t=>t.status==='today' || t.status==='active').sort((a,b)=>a.order-b.order);
+  }
+  function getBankTasks(){ return state.tasks.filter(t=>t.status==='pending'); }
+  function activeTask(){ return state.tasks.find(t=>t.id===state.activeTaskId && t.status==='active') || null; }
+
+  function ensureDayChange(){
+    const td = todayKey();
+    if(state.lastDay !== td){
+      state.lastDay = td;
+      const t = activeTask();
+      if(t){ t.status='today'; state.activeTaskId = null; t.remainingSec=null; }
+      save();
+    }
+  }
+
+  function setScreen(n){ ui.screen=n; render(); }
+
+  function render(){
+    ensureDayChange();
+    renderHome(); renderBank(); renderMind(); renderLog(); renderSettings(); renderNav();
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    const activeScreen = document.getElementById(`screen-${ui.screen}`);
+    if(activeScreen) activeScreen.classList.add('active');
+    manageTimer();
+  }
+
+  function renderHome(){
+    const el = document.getElementById('screen-home');
+    const today = getTodayTasks();
+    const doneCount = state.tasks.filter(t=>t.doneDate===todayKey() && !t.checkin).length;
+    const pendingCount = state.tasks.filter(t=>t.status==='today' || t.status==='active').length;
+    const totalCount = doneCount + pendingCount;
+    const pct = totalCount ? Math.round((doneCount/totalCount)*100) : 0;
+    const debtTotal = +state.settings.totalDebt || 0;
+    const debtPaid = +state.settings.debtPaid || 0;
+    const remain = Math.max(0, debtTotal - debtPaid);
+    const debtPct = debtTotal>0 ? Math.min(100, Math.round((debtPaid/debtTotal)*100)) : 0;
+    const since = Math.max(0, Math.floor((new Date(todayKey()) - new Date(state.settings.debtStart||todayKey()))/86400000));
+    const doom = !!state.doomscroll[todayKey()];
+    const a = activeTask();
+
+    el.innerHTML = `
+      <div class="card home-grid">
+        <div class="stack">
+          <div class="row"><span class="tag">Day Hub</span><span class="tag">${pct>=70?'On Track':'In Progress'}</span></div>
+          <div class="quote">“${dayQuote()}”</div>
+        </div>
+        <div class="ring" style="background:conic-gradient(var(--primary-2) ${pct*3.6}deg, rgba(77,99,143,.35) 0deg)"><i>${pct}%</i></div>
+      </div>
+
+      <div class="card stack">
+        <div class="row between"><h4>Debt Status · War Room</h4><span class="small muted">Day ${since}</span></div>
+        <div class="small">Total: <b>$${debtTotal.toLocaleString()}</b> · Paid: <b>$${debtPaid.toLocaleString()}</b> · Remaining: <b class="warn">$${remain.toLocaleString()}</b></div>
+        <div class="bar"><div class="fill" style="width:${debtPct}%"></div></div>
+        <div class="small muted">${debtPct}% toward zero · payment log coming soon</div>
+      </div>
+
+      <div class="card stack">
+        <div class="row between"><h4>Today</h4><span class="small muted">Unlimited queue</span></div>
+        <div class="list">${today.map(taskCard).join('') || `<div class="small muted">No tasks loaded. Pull from Task Bank.</div>`}</div>
+        <div class="split">
+          <button id="btn-load-task" class="btn-ghost">Load task</button>
+          <button id="btn-fuel" class="btn-ok">Fuel the Engine</button>
+        </div>
+      </div>
+
+      ${a? `<div class="card stack" id="focus-panel">${focusPanel(a)}</div>`:''}
+
+      <div class="card stack">
+        <div class="row between"><h4>Body Check-ins</h4><span class="small muted">Discipline maintenance</span></div>
+        <div class="checkin-grid">${CHECKINS.map(ci=>{
+          const count = state.tasks.filter(t=>t.checkin && t.doneDate===todayKey() && t.text===ci).length;
+          return `<button class="checkin btn-ghost" data-checkin="${ci}">${ci}${count>1?`<span class="badge">${count}</span>`:''}</button>`;
+        }).join('')}</div>
+      </div>
+
+      <div class="card row between">
+        <div>
+          <div class="small">Doomscroll accountability</div>
+          <div class="small muted">Did you doomscroll today?</div>
+        </div>
+        <button id="doom-toggle" class="${doom?'btn-danger':'btn-ghost'}">${doom?'SCROLLED':'NO'}</button>
+      </div>
+    `;
+
+    el.querySelectorAll('.task').forEach(n=>n.onclick=()=>openTaskModal(n.dataset.id));
+    el.querySelectorAll('[data-checkin]').forEach(n=>n.onclick=()=>addCheckin(n.dataset.checkin));
+    const lt = el.querySelector('#btn-load-task'); if(lt) lt.onclick=()=>setScreen('bank');
+    const fuel = el.querySelector('#btn-fuel'); if(fuel) fuel.onclick=()=>openEditor(null,'today');
+    el.querySelector('#doom-toggle').onclick=()=>{ state.doomscroll[todayKey()] = !state.doomscroll[todayKey()]; save(); render(); };
+    const fp = el.querySelector('#btn-complete-focus'); if(fp) fp.onclick=completeActive;
+    const stop = el.querySelector('#btn-stop-focus'); if(stop) stop.onclick=stopFocusToToday;
+    const shr = el.querySelector('#btn-shrink-10'); if(shr) shr.onclick=()=>shrinkActive(10);
+    el.querySelectorAll('.move-up').forEach(btn=>btn.onclick=(e)=>{e.stopPropagation(); reorder(btn.dataset.id,-1);});
+    el.querySelectorAll('.move-down').forEach(btn=>btn.onclick=(e)=>{e.stopPropagation(); reorder(btn.dataset.id,1);});
+  }
+
+  function taskCard(t){
+    const isActive = t.status==='active';
+    const meta = `${t.duration}m · ${new Date(t.createdAt).toLocaleDateString()}`;
+    return `<div class="task ${isActive?'active':''}" data-id="${t.id}">
+      <div class="task-top">
+        <div class="stack" style="gap:5px;flex:1;">
+          <div class="task-text">${escapeHtml(t.text)} ${isActive?'<span class="tag">LOCKED</span>':''}</div>
+          <div class="row" style="flex-wrap:wrap">${categoryChip(t.category)}<span class="small muted">${meta}</span></div>
+        </div>
+        ${!isActive?`<div class="stack" style="gap:4px"><button class="btn-ghost small move-up" data-id="${t.id}">↑</button><button class="btn-ghost small move-down" data-id="${t.id}">↓</button></div>`:''}
+      </div>
+    </div>`;
+  }
+
+  function focusPanel(t){
+    const sec = Number.isFinite(t.remainingSec) ? t.remainingSec : t.duration*60;
+    const m = String(Math.floor(sec/60)).padStart(2,'0');
+    const s = String(sec%60).padStart(2,'0');
+    const critical = sec < 10;
+    return `
+      <div class="row between"><h4>Focus</h4>${categoryChip(t.category)}</div>
+      <div class="small muted">${escapeHtml(t.text)}</div>
+      <div class="focus-time ${critical?'critical':''}">${m}:${s}</div>
+      <div class="split">
+        <button id="btn-complete-focus" class="btn-ok">Complete</button>
+        <button id="btn-stop-focus" class="btn-ghost">Stop</button>
+      </div>
+      <button id="btn-shrink-10" class="btn-amber">Shrink to 10m</button>
+    `;
+  }
+
+  function renderBank(){
+    const el = document.getElementById('screen-bank');
+    const tasks = getBankTasks().filter(t=>ui.bankFilter==='All'||t.category===ui.bankFilter);
+    el.innerHTML = `
+      <div class="card stack">
+        <div class="row between"><h4>Task Bank</h4><button id="btn-add-bank">New</button></div>
+        <div class="chips">
+          ${['All','Career','Money','Debt','Body','Mind'].map(c=>`<button class="chip ${ui.bankFilter===c?'active':''}" data-filter="${c}">${c==='All'?'All':`${CATS[c].icon} ${c}`}</button>`).join('')}
+        </div>
+        <div class="list">${tasks.map(t=>`
+          <div class="task">
+            <div class="task-top"><div class="stack" style="gap:5px;flex:1"><div class="task-text">${escapeHtml(t.text)}</div><div class="row">${categoryChip(t.category)}<span class="small muted">${t.duration}m</span></div></div>
+            <button data-promote="${t.id}" class="btn-ok small">→ Today</button></div>
+          </div>`).join('') || `<div class="small muted">Task Bank clear.</div>`}
+        </div>
+      </div>`;
+    el.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{ui.bankFilter=b.dataset.filter; renderBank();});
+    el.querySelector('#btn-add-bank').onclick=()=>openEditor(null,'pending');
+    el.querySelectorAll('[data-promote]').forEach(b=>b.onclick=()=>promoteToToday(b.dataset.promote));
+  }
+
+  function renderMind(){
+    const el = document.getElementById('screen-mind');
+    el.innerHTML = `
+      <div class="card stack">
+        <h4>Things to Ask AI</h4>
+        <div class="row"><input id="ai-input" class="input" placeholder="Ask AI later..."/><button id="ai-add">Capture</button></div>
+        <div class="list">${state.aiQuestions.map(q=>`
+          <div class="task"><div class="task-top"><div class="task-text">${escapeHtml(q.text)}</div>
+          <div class="row"><button class="btn-ok small" data-convert="${q.id}">Convert → Task</button><button class="btn-danger small" data-delq="${q.id}">Delete</button></div></div></div>
+        `).join('') || `<div class="small muted">No captures.</div>`}</div>
+      </div>
+      <div class="card stack">
+        <h4>Journal</h4>
+        <textarea id="journal-input" placeholder="Hard truth. Next step. No drama."></textarea>
+        <button id="journal-save">Save entry</button>
+        <div class="small muted">Entries: ${state.journal.length}</div>
+      </div>`;
+    el.querySelector('#ai-add').onclick=()=>{ const i=el.querySelector('#ai-input'); const tx=i.value.trim(); if(!tx) return; state.aiQuestions.unshift({id:uid(),text:tx,ts:Date.now()}); save(); renderMind(); };
+    el.querySelectorAll('[data-delq]').forEach(b=>b.onclick=()=>{ state.aiQuestions=state.aiQuestions.filter(q=>q.id!==b.dataset.delq); save(); renderMind();});
+    el.querySelectorAll('[data-convert]').forEach(b=>b.onclick=()=>{ const q=state.aiQuestions.find(x=>x.id===b.dataset.convert); if(!q) return; state.tasks.push({id:uid(),text:q.text,category:'Mind',duration:25,status:'pending',order:state.tasks.length,createdAt:Date.now(),doneDate:null,completedAt:null,blocker:'',checkin:false,remainingSec:null,startedAt:null}); state.aiQuestions=state.aiQuestions.filter(x=>x.id!==q.id); save(); render(); });
+    el.querySelector('#journal-save').onclick=()=>{ const t=el.querySelector('#journal-input').value.trim(); if(!t) return; state.journal.unshift({id:uid(),text:t,ts:Date.now()}); save(); renderMind(); };
+  }
+
+  function renderLog(){
+    const el = document.getElementById('screen-log');
+    const days = [...Array(30)].map((_,i)=>{const d=new Date(); d.setDate(d.getDate()-i); return todayKey(d);});
+    const doneByDay = day => state.tasks.filter(t=>t.doneDate===day);
+    const period = ui.statRange;
+    const cut = new Date(); cut.setDate(cut.getDate()-(period-1));
+    const within = t=>t.doneDate && new Date(t.doneDate)>=new Date(todayKey(cut));
+    const donePeriod = state.tasks.filter(t=>within(t));
+    const tasksCompleted = donePeriod.filter(t=>!t.checkin).length;
+    const careerCompleted = donePeriod.filter(t=>!t.checkin && t.category==='Career').length;
+    const bodyDays = new Set(donePeriod.filter(t=>t.checkin && t.category==='Body').map(t=>t.doneDate));
+    let streak=0; for(let i=period-1;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); const k=todayKey(d); if(bodyDays.has(k)) streak++; else if(streak>0) break; }
+    const doomDays = Object.entries(state.doomscroll).filter(([k,v])=>v && new Date(k)>=new Date(todayKey(cut))).length;
+    const debtTotal = +state.settings.totalDebt || 0, debtPaid = +state.settings.debtPaid || 0, debtRemain = Math.max(0,debtTotal-debtPaid);
+
+    el.innerHTML = `
+      <div class="card stack">
+        <div class="chips subtabs">
+          <button class="chip ${ui.logTab==='log'?'active':''}" data-ltab="log">Log</button>
+          <button class="chip ${ui.logTab==='stats'?'active':''}" data-ltab="stats">Stats</button>
+        </div>
+        ${ui.logTab==='log' ? `
+          <div class="list">${days.map(d=>{ const arr=doneByDay(d); const doom=state.doomscroll[d]; return `<div class="log-day"><div class="row between"><b>${d}</b>${doom?'<span class="scroll-mark">SCROLLED</span>':''}</div><div class="small muted">${arr.length} completions</div><div class="small">${arr.slice(0,4).map(t=>`• ${escapeHtml(t.text)}`).join('<br>')||'—'}</div></div>`; }).join('')}</div>
+        ` : `
+          <div class="chips subtabs"><button class="chip ${ui.statRange===7?'active':''}" data-range="7">7 days</button><button class="chip ${ui.statRange===30?'active':''}" data-range="30">30 days</button></div>
+          <div class="stats-grid">
+            <div class="metric"><div class="small muted">Tasks completed</div><div class="n">${tasksCompleted}</div></div>
+            <div class="metric"><div class="small muted">Career completed</div><div class="n">${careerCompleted}</div></div>
+            <div class="metric"><div class="small muted">Body streak</div><div class="n">${streak}</div></div>
+            <div class="metric"><div class="small muted">Doomscroll days</div><div class="n">${doomDays}</div></div>
+          </div>
+          <div class="metric"><div class="small muted">Debt progress</div><div class="small">Remaining $${debtRemain.toLocaleString()} of $${debtTotal.toLocaleString()}</div><div class="bar" style="margin-top:6px"><div class="fill" style="width:${debtTotal?Math.min(100,Math.round(debtPaid/debtTotal*100)):0}%"></div></div></div>
+        `}
+      </div>`;
+    el.querySelectorAll('[data-ltab]').forEach(b=>b.onclick=()=>{ui.logTab=b.dataset.ltab; renderLog();});
+    el.querySelectorAll('[data-range]').forEach(b=>b.onclick=()=>{ui.statRange=+b.dataset.range; renderLog();});
+  }
+
+  function renderSettings(){
+    const el = document.getElementById('screen-settings');
+    const s = state.settings;
+    el.innerHTML = `
+      <div class="card stack">
+        <h4>System Settings</h4>
+        <label class="small muted">Default focus duration (minutes)</label><input id="set-dur" class="input" type="number" min="1" value="${s.defaultDur}">
+        <label class="small muted">Total debt</label><input id="set-total" class="input" type="number" min="0" value="${s.totalDebt}">
+        <label class="small muted">Amount paid</label><input id="set-paid" class="input" type="number" min="0" value="${s.debtPaid}">
+        <label class="small muted">Debt tracking start date</label><input id="set-start" class="input" type="date" value="${s.debtStart}">
+        <button id="save-settings">Save settings</button>
+      </div>
+      <div class="card stack">
+        <h4>Data</h4>
+        <div class="split"><button id="export-btn">Export</button><label class="btn btn-ghost" style="text-align:center">Import<input id="import-file" type="file" accept="application/json" class="hidden"></label></div>
+        <button id="reset-all" class="btn-danger">Reset All</button>
+      </div>`;
+    el.querySelector('#save-settings').onclick=()=>{
+      s.defaultDur = Math.max(1, +el.querySelector('#set-dur').value || 25);
+      s.totalDebt = Math.max(0, +el.querySelector('#set-total').value || 0);
+      s.debtPaid = Math.max(0, +el.querySelector('#set-paid').value || 0);
+      s.debtStart = el.querySelector('#set-start').value || todayKey();
+      save(); render();
+    };
+    el.querySelector('#export-btn').onclick=exportData;
+    el.querySelector('#import-file').onchange=importData;
+    el.querySelector('#reset-all').onclick=()=>{ if(confirm('Reset all CONTROL PANEL data?')){ localStorage.removeItem(KEY); state=migrate({}); save(); render(); } };
+  }
+
+  function renderNav(){
+    const nav = document.getElementById('bottom-nav');
+    const items = [ ['home','⌂','Home'], ['bank','☷','Bank'], ['mind','🜁','Mind'], ['log','◷','Log'], ['settings','⚙','Settings'] ];
+    nav.innerHTML = items.map(([id,ic,tx])=>`<button class="nav-btn ${ui.screen===id?'active':''}" data-nav="${id}"><span>${ic}</span><span>${tx}</span></button>`).join('');
+    nav.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>setScreen(b.dataset.nav));
+  }
+
+  function reorder(id,dir){
+    const arr=state.tasks.filter(t=>t.status==='today').sort((a,b)=>a.order-b.order);
+    const idx=arr.findIndex(t=>t.id===id); if(idx<0) return;
+    const j=idx+dir; if(j<0||j>=arr.length) return;
+    const a=arr[idx], b=arr[j]; const oa=a.order; a.order=b.order; b.order=oa; save(); renderHome();
+  }
+
+  function promoteToToday(id){
+    const max = Math.max(-1, ...getTodayTasks().map(t=>t.order));
+    const t = state.tasks.find(x=>x.id===id); if(!t) return;
+    t.status='today'; t.order=max+1; save(); render();
+  }
+
+  function moveToBank(id){
+    const t=state.tasks.find(x=>x.id===id); if(!t) return;
+    if(t.status==='active'){stopFocusToToday();}
+    t.status='pending'; save(); render();
+  }
+
+  function openEditor(id,statusHint){
+    ui.editingId=id;
+    const t = id ? state.tasks.find(x=>x.id===id) : null;
+    const mw=document.getElementById('editor-modal-wrap');
+    const m=document.getElementById('editor-modal');
+    m.innerHTML=`
+      <h4>${t?'Edit Task':'New Task'}</h4>
+      <div class="stack">
+        <input id="ed-text" class="input" placeholder="Task objective" value="${t?escapeAttr(t.text):''}">
+        <div class="split"><input id="ed-dur" class="input" type="number" min="0" value="${t?t.duration:state.settings.defaultDur}">
+        <select id="ed-cat">${Object.keys(CATS).map(c=>`<option ${((t&&t.category===c)||(!t&&c==='Career'))?'selected':''}>${c}</option>`).join('')}</select></div>
+        <div class="split"><button id="ed-save" class="btn-ok">Save</button><button id="ed-cancel" class="btn-ghost">Cancel</button></div>
+      </div>`;
+    mw.classList.add('show');
+    m.querySelector('#ed-cancel').onclick=()=>mw.classList.remove('show');
+    m.querySelector('#ed-save').onclick=()=>{
+      const text=m.querySelector('#ed-text').value.trim(); if(!text) return;
+      const duration=Math.max(0,+m.querySelector('#ed-dur').value||state.settings.defaultDur);
+      const category=mapLegacyCategory(m.querySelector('#ed-cat').value);
+      if(t){ t.text=text; t.duration=duration; t.category=category; }
+      else {
+        const st = statusHint||'pending';
+        const ord = st==='today' ? Math.max(-1,...getTodayTasks().map(x=>x.order))+1 : state.tasks.length;
+        state.tasks.push({id:uid(), text, category, duration, status:st, order:ord, createdAt:Date.now(), doneDate:null, completedAt:null, blocker:'', checkin:false, remainingSec:null, startedAt:null});
+      }
+      save(); mw.classList.remove('show'); render();
+    };
+  }
+
+  function openTaskModal(id){
+    const t=state.tasks.find(x=>x.id===id); if(!t || t.status==='active') return;
+    const mw=document.getElementById('task-modal-wrap');
+    const m=document.getElementById('task-modal');
+    m.innerHTML=`
+      <h4>Task Detail</h4>
+      <div class="stack">
+        <div class="task-text">${escapeHtml(t.text)}</div>
+        <div class="row">${categoryChip(t.category)}<span class="small muted">${t.duration}m</span></div>
+        <button id="td-start" class="btn-ok">Start Focus</button>
+        <button id="td-edit" class="btn-ghost">Edit</button>
+        <button id="td-bank" class="btn-ghost">Move to Bank</button>
+        <button id="td-del" class="btn-danger">Delete</button>
+        <button id="td-close" class="btn-ghost">Close</button>
+      </div>`;
+    mw.classList.add('show');
+    m.querySelector('#td-close').onclick=()=>mw.classList.remove('show');
+    m.querySelector('#td-edit').onclick=()=>{mw.classList.remove('show'); openEditor(id);};
+    m.querySelector('#td-bank').onclick=()=>{moveToBank(id); mw.classList.remove('show');};
+    m.querySelector('#td-del').onclick=()=>{state.tasks=state.tasks.filter(x=>x.id!==id); save(); mw.classList.remove('show'); render();};
+    m.querySelector('#td-start').onclick=()=>{startFocus(id); mw.classList.remove('show');};
+  }
+
+  function startFocus(id){
+    const existing=activeTask();
+    if(existing && existing.id!==id){ existing.status='today'; existing.remainingSec=null; }
+    const t=state.tasks.find(x=>x.id===id); if(!t) return;
+    t.status='active'; t.startedAt=Date.now(); t.remainingSec = t.duration*60;
+    state.activeTaskId=t.id; ui.blockerShownFor=null; save(); render();
+  }
+
+  function stopFocusToToday(){
+    const t=activeTask(); if(!t) return;
+    t.status='today'; t.remainingSec=null; state.activeTaskId=null; ui.blockerShownFor=null; save(); render();
+  }
+
+  function completeActive(){
+    const t=activeTask(); if(!t) return;
+    t.status='done'; t.completedAt=Date.now(); t.doneDate=todayKey(); t.remainingSec=null; state.activeTaskId=null; ui.blockerShownFor=null; save(); render();
+  }
+
+  function shrinkActive(mins){ const t=activeTask(); if(!t) return; t.duration=mins; t.remainingSec=mins*60; save(); render(); }
+
+  function manageTimer(){
+    const t=activeTask();
+    if(!t){ if(timerInt){ clearInterval(timerInt); timerInt=null; } return; }
+    if(timerInt) return;
+    timerInt = setInterval(()=>{
+      const a=activeTask(); if(!a){ clearInterval(timerInt); timerInt=null; return; }
+      a.remainingSec = Math.max(0,(a.remainingSec ?? a.duration*60)-1);
+      if(a.remainingSec===0){
+        clearInterval(timerInt); timerInt=null;
+        if(ui.blockerShownFor!==a.id){ ui.blockerShownFor=a.id; openBlockerModal(a.id); }
+      }
+      save();
+      if(ui.screen==='home' && activeTask()) updateFocusTickUI(activeTask());
+    },1000);
+  }
+
+  function updateFocusTickUI(task){
+    const timerNode = document.querySelector('#focus-panel .focus-time');
+    if(!timerNode) return;
+    const sec = Number.isFinite(task.remainingSec) ? task.remainingSec : task.duration * 60;
+    const m = String(Math.floor(sec / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    timerNode.textContent = `${m}:${s}`;
+    timerNode.classList.toggle('critical', sec < 10);
+  }
+
+  function openBlockerModal(id){
+    const t=state.tasks.find(x=>x.id===id && x.status==='active'); if(!t) return;
+    const mw=document.getElementById('blocker-modal-wrap');
+    const m=document.getElementById('blocker-modal');
+    m.innerHTML=`
+      <h4>Blocker Report</h4>
+      <div class="small muted">Focus window expired.</div>
+      <textarea id="blocker-text" placeholder="State the blocker with precision."></textarea>
+      <div class="split" style="margin-top:8px">
+        <button id="blocker-miss" class="btn-danger">Mark Missed</button>
+        <button id="blocker-shrink" class="btn-amber">Shrink to 10m</button>
+      </div>`;
+    m.innerHTML += `<button id="blocker-continue" class="btn-ghost" style="margin-top:8px;width:100%">Continue 5m</button>`;
+    mw.classList.add('show');
+    m.querySelector('#blocker-miss').onclick=()=>{
+      const txt=m.querySelector('#blocker-text').value.trim()||'No blocker provided';
+      const a=activeTask(); if(!a) return mw.classList.remove('show');
+      a.status='missed'; a.blocker=txt; a.completedAt=Date.now(); a.doneDate=todayKey(); a.remainingSec=null; state.activeTaskId=null; save(); mw.classList.remove('show'); render();
+    };
+    m.querySelector('#blocker-shrink').onclick=()=>{ const a=activeTask(); if(!a) return; a.duration=10; a.remainingSec=10*60; ui.blockerShownFor=null; save(); mw.classList.remove('show'); render(); };
+    m.querySelector('#blocker-continue').onclick=()=>{ const a=activeTask(); if(!a) return; a.duration=5; a.remainingSec=5*60; ui.blockerShownFor=null; save(); mw.classList.remove('show'); render(); };
+  }
+
+  function addCheckin(name){
+    state.tasks.push({id:uid(), text:name, category:'Body', duration:0, status:'done', order:state.tasks.length, createdAt:Date.now(), doneDate:todayKey(), completedAt:Date.now(), blocker:'', checkin:true, remainingSec:null, startedAt:null});
+    save(); renderHome();
+  }
+
+  function exportData(){
+    const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`cp_data_${todayKey()}.json`; a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  function importData(e){
+    const file=e.target.files && e.target.files[0]; if(!file) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try {
+        const obj = JSON.parse(String(fr.result||'{}'));
+        state = migrate(obj);
+        save();
+        render();
+      } catch { alert('Invalid JSON file.'); }
+      e.target.value='';
+    };
+    fr.readAsText(file);
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+  function escapeAttr(s){ return escapeHtml(s).replace(/'/g,'&#39;'); }
+
+  document.getElementById('task-modal-wrap').onclick=(e)=>{ if(e.target.id==='task-modal-wrap') e.currentTarget.classList.remove('show'); };
+  document.getElementById('blocker-modal-wrap').onclick=(e)=>{ if(e.target.id==='blocker-modal-wrap'){} };
+  document.getElementById('editor-modal-wrap').onclick=(e)=>{ if(e.target.id==='editor-modal-wrap') e.currentTarget.classList.remove('show'); };
+
+  render();
+})();
+</script>
+</body>
+</html>
